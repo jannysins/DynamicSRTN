@@ -101,7 +101,7 @@
             // cbOptions
             // 
             cbOptions.FormattingEnabled = true;
-            cbOptions.Items.AddRange(new object[] { "GANTT Chart illustrating the execution of each process/job", "Process Waiting time", "average waiting time", "Process completion time", "average completion time", "process turn around time", "average turn around time", "Dynamic Partitioning Memory Map" });
+            cbOptions.Items.AddRange(new object[] { "GANTT Chart illustrating the execution of each process/job", "Process Waiting time", "Average waiting time", "Process completion time", "Average completion time", "Process turn around time", "Average turn around time", "Dynamic Partitioning Memory Map" });
             cbOptions.Location = new Point(12, 382);
             cbOptions.Name = "cbOptions";
             cbOptions.Size = new Size(424, 23);
