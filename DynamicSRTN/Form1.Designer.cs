@@ -42,12 +42,13 @@
             label3 = new Label();
             txtTotalMemory = new TextBox();
             lblTotalMemory = new Label();
+            label4 = new Label();
             ((System.ComponentModel.ISupportInitialize)dgvInput).BeginInit();
             SuspendLayout();
             // 
             // txtNumJobs
             // 
-            txtNumJobs.Location = new Point(148, 15);
+            txtNumJobs.Location = new Point(141, 90);
             txtNumJobs.Name = "txtNumJobs";
             txtNumJobs.Size = new Size(68, 23);
             txtNumJobs.TabIndex = 0;
@@ -55,7 +56,7 @@
             // lblNumJobs
             // 
             lblNumJobs.AutoSize = true;
-            lblNumJobs.Location = new Point(18, 17);
+            lblNumJobs.Location = new Point(11, 92);
             lblNumJobs.Name = "lblNumJobs";
             lblNumJobs.Size = new Size(124, 15);
             lblNumJobs.TabIndex = 1;
@@ -63,7 +64,7 @@
             // 
             // btnSetJobs
             // 
-            btnSetJobs.Location = new Point(222, 43);
+            btnSetJobs.Location = new Point(215, 118);
             btnSetJobs.Name = "btnSetJobs";
             btnSetJobs.Size = new Size(70, 24);
             btnSetJobs.TabIndex = 2;
@@ -74,14 +75,14 @@
             // 
             dgvInput.AllowUserToAddRows = false;
             dgvInput.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvInput.Location = new Point(19, 70);
+            dgvInput.Location = new Point(12, 145);
             dgvInput.Name = "dgvInput";
-            dgvInput.Size = new Size(363, 148);
+            dgvInput.Size = new Size(424, 201);
             dgvInput.TabIndex = 3;
             // 
             // btnContinue
             // 
-            btnContinue.Location = new Point(113, 224);
+            btnContinue.Location = new Point(141, 352);
             btnContinue.Name = "btnContinue";
             btnContinue.Size = new Size(79, 24);
             btnContinue.TabIndex = 4;
@@ -90,7 +91,7 @@
             // 
             // btnExit
             // 
-            btnExit.Location = new Point(198, 224);
+            btnExit.Location = new Point(226, 352);
             btnExit.Name = "btnExit";
             btnExit.Size = new Size(80, 24);
             btnExit.TabIndex = 5;
@@ -101,30 +102,30 @@
             // 
             cbOptions.FormattingEnabled = true;
             cbOptions.Items.AddRange(new object[] { "GANTT Chart illustrating the execution of each process/job", "Process Waiting time", "average waiting time", "Process completion time", "average completion time", "process turn around time", "average turn around time", "Dynamic Partitioning Memory Map" });
-            cbOptions.Location = new Point(19, 254);
+            cbOptions.Location = new Point(12, 382);
             cbOptions.Name = "cbOptions";
-            cbOptions.Size = new Size(363, 23);
+            cbOptions.Size = new Size(424, 23);
             cbOptions.TabIndex = 6;
             // 
             // rtbOutput
             // 
-            rtbOutput.Location = new Point(19, 283);
+            rtbOutput.Location = new Point(12, 411);
             rtbOutput.Name = "rtbOutput";
-            rtbOutput.Size = new Size(363, 129);
+            rtbOutput.Size = new Size(424, 129);
             rtbOutput.TabIndex = 7;
             rtbOutput.Text = "";
             // 
             // pnlGantt
             // 
-            pnlGantt.Location = new Point(392, 25);
+            pnlGantt.Location = new Point(460, 17);
             pnlGantt.Name = "pnlGantt";
-            pnlGantt.Size = new Size(936, 346);
+            pnlGantt.Size = new Size(854, 346);
             pnlGantt.TabIndex = 8;
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(398, 176);
+            label1.Location = new Point(391, 251);
             label1.Name = "label1";
             label1.Size = new Size(0, 15);
             label1.TabIndex = 9;
@@ -132,7 +133,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(419, 183);
+            label2.Location = new Point(412, 258);
             label2.Name = "label2";
             label2.Size = new Size(0, 15);
             label2.TabIndex = 10;
@@ -140,14 +141,14 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(19, 52);
+            label3.Location = new Point(12, 127);
             label3.Name = "label3";
             label3.Size = new Size(0, 15);
             label3.TabIndex = 11;
             // 
             // txtTotalMemory
             // 
-            txtTotalMemory.Location = new Point(148, 44);
+            txtTotalMemory.Location = new Point(141, 119);
             txtTotalMemory.Name = "txtTotalMemory";
             txtTotalMemory.Size = new Size(68, 23);
             txtTotalMemory.TabIndex = 12;
@@ -155,17 +156,29 @@
             // lblTotalMemory
             // 
             lblTotalMemory.AutoSize = true;
-            lblTotalMemory.Location = new Point(18, 44);
+            lblTotalMemory.Location = new Point(11, 119);
             lblTotalMemory.Name = "lblTotalMemory";
             lblTotalMemory.Size = new Size(110, 15);
             lblTotalMemory.TabIndex = 13;
             lblTotalMemory.Text = "Enter Job Size (MB):";
             // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Font = new Font("Segoe UI", 18F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            label4.Location = new Point(11, 34);
+            label4.Name = "label4";
+            label4.Size = new Size(285, 32);
+            label4.TabIndex = 14;
+            label4.Text = "MAMAW DYNAMIC SRTN";
+            label4.Click += label4_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1343, 450);
+            ClientSize = new Size(1322, 643);
+            Controls.Add(label4);
             Controls.Add(lblTotalMemory);
             Controls.Add(txtTotalMemory);
             Controls.Add(label3);
@@ -203,5 +216,6 @@
         private Label label3;
         private TextBox txtTotalMemory;
         private Label lblTotalMemory;
+        private Label label4;
     }
 }

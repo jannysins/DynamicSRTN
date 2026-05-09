@@ -44,6 +44,9 @@ namespace DynamicSRTN
 
         public Form1()
         {
+
+            this.WindowState = FormWindowState.Maximized;
+
             InitializeComponent();
             SetupUI();
 
@@ -75,19 +78,17 @@ namespace DynamicSRTN
 
         private void BtnSetJobs_Click(object sender, EventArgs e)
         {
-            // Assuming you also added validation for the Job Size textbox here
             if (int.TryParse(txtNumJobs.Text, out int numJobs) && numJobs > 0)
             {
                 dgvInput.Rows.Clear();
                 for (int i = 1; i <= numJobs; i++)
                 {
-                    dgvInput.Rows.Add($"P{i}", "0.0", "0.0", "100.0");
+                    // FIXED: Changed the last parameter from "100.0" to "0.0"
+                    dgvInput.Rows.Add($"P{i}", "0.0", "0.0", "0.0");
                 }
                 dgvInput.Visible = true;
                 btnContinue.Visible = true;
                 isCalculated = false;
-
-                // NEW: Show the exit button now that the setup is complete
                 btnExit.Visible = true;
             }
             else
@@ -297,11 +298,22 @@ namespace DynamicSRTN
                 pnlGantt.Paint += DrawGanttChart;
                 pnlGantt.Invalidate();
             }
-            else if (selection == 8) // NEW: Memory Map
+            else if (selection == 8) // Memory Map
             {
                 pnlGantt.Visible = true;
                 pnlGantt.AutoScroll = true;
-                pnlGantt.AutoScrollMinSize = new Size(pnlGantt.Width, (int)totalSystemMemory + 100);
+
+                // NEW: Calculate the exact total height we will be drawing so the scrollbar knows how far to go
+                int totalDrawHeight = 0;
+                foreach (var block in memoryMap)
+                {
+                    totalDrawHeight += (int)Math.Max((float)block.Size, 30f); // Match the minimum 30px height rule
+                }
+                totalDrawHeight += 100; // Add some top/bottom padding margin
+
+                // Apply the calculated height to the scroll limits
+                pnlGantt.AutoScrollMinSize = new Size(pnlGantt.Width, totalDrawHeight);
+
                 pnlGantt.Paint += DrawMemoryMap;
                 pnlGantt.Invalidate();
             }
@@ -350,37 +362,39 @@ namespace DynamicSRTN
         {
             Graphics g = e.Graphics;
             g.Clear(Color.White);
-            g.TranslateTransform(0, pnlGantt.AutoScrollPosition.Y); // Vertical Scroll
+
+            // This applies the vertical scroll calculation
+            g.TranslateTransform(0, pnlGantt.AutoScrollPosition.Y);
 
             float blockWidth = 150f;
             float x = 50f;
 
-            // Start from the bottom of the canvas and draw upwards to match your image
-            float currentY = Math.Max(pnlGantt.Height, (float)totalSystemMemory + 50f);
+            // FIXED: Start from the bottom of our newly calculated virtual scrolling canvas
+            float currentY = pnlGantt.AutoScrollMinSize.Height - 50f;
 
-            // Reverse the map so OS is drawn at the very bottom
             var reversedMap = Enumerable.Reverse(memoryMap).ToList();
 
             foreach (var block in reversedMap)
             {
-                // Scale the visual height so it fits nicely on screen
                 float blockHeight = Math.Max((float)block.Size, 30f);
-                currentY -= blockHeight;
+                currentY -= blockHeight; // Move up by the block's height to draw the next one
 
-                // Draw colored rectangle
                 using (Brush brush = new SolidBrush(block.BlockColor))
                 {
                     g.FillRectangle(brush, x, currentY, blockWidth, blockHeight);
                 }
                 g.DrawRectangle(Pens.Black, x, currentY, blockWidth, blockHeight);
 
-                // Draw Name inside block
                 StringFormat sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
                 g.DrawString(block.Name, this.Font, Brushes.Black, new RectangleF(x, currentY, blockWidth, blockHeight), sf);
 
-                // Draw Memory Size (e.g., 100K) to the right of the block
                 g.DrawString($"{block.Size}K", this.Font, Brushes.Black, x + blockWidth + 10, currentY + (blockHeight / 2) - 8);
             }
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
