@@ -98,26 +98,53 @@ namespace DynamicSRTN
         {
             try
             {
+                // NEW: Force the DataGridView to commit any cell the user is currently editing
+                dgvInput.EndEdit();
+
                 // Ensure total memory is provided
                 if (!double.TryParse(txtTotalMemory.Text, out totalSystemMemory) || totalSystemMemory <= 0)
                 {
-                    MessageBox.Show("Please enter a valid Total Memory size.");
+                    MessageBox.Show("Please enter a valid Total Memory size.", "Input Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
+                // Validate DataGridView inputs before running the algorithm
+                for (int i = 0; i < dgvInput.Rows.Count; i++)
+                {
+                    // Skip the empty new row at the bottom if AllowUserToAddRows is true
+                    if (dgvInput.Rows[i].IsNewRow) continue;
+
+                    var arrivalCell = dgvInput.Rows[i].Cells[1].Value;
+                    var burstCell = dgvInput.Rows[i].Cells[2].Value;
+                    var memoryCell = dgvInput.Rows[i].Cells[3].Value;
+
+                    // Parse the values and ensure Burst Time and Memory Size are strictly > 0
+                    bool isArrivalValid = arrivalCell != null && double.TryParse(arrivalCell.ToString(), out double at) && at >= 0;
+                    bool isBurstValid = burstCell != null && double.TryParse(burstCell.ToString(), out double bt) && bt > 0; // MUST be > 0
+                    bool isMemoryValid = memoryCell != null && double.TryParse(memoryCell.ToString(), out double mem) && mem > 0;
+
+                    if (!isArrivalValid || !isBurstValid || !isMemoryValid)
+                    {
+                        MessageBox.Show($"Please enter valid numbers for Job P{i + 1}.\n\n" +
+                                        $"- Arrival Time must be 0 or higher.\n" +
+                                        $"- Burst Time MUST be greater than 0.\n" +
+                                        $"- Memory Size MUST be greater than 0.",
+                                        "Invalid Input Detected",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Warning);
+                        return; // Stops processing entirely, preventing the freeze!
+                    }
+                }
+
                 RunSRTN();
-                CalculateMemoryMap(); // NEW: Calculate memory layout
+                CalculateMemoryMap();
 
                 cbOptions.Visible = true;
-                MessageBox.Show("Data processed successfully. Please select an option from the dropdown to view results.");
-            }
-            catch (FormatException)
-            {
-                MessageBox.Show("Input Error: Please ensure all table values are valid numbers.");
+                MessageBox.Show("Data processed successfully. Please select an option from the dropdown to view results.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error processing data.\n\nDetails: " + ex.Message);
+                MessageBox.Show("Error processing data.\n\nDetails: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -156,7 +183,15 @@ namespace DynamicSRTN
                 if (availableJobs.Count == 0)
                 {
                     var nextJob = jobs.Where(j => j.RemainingTime > epsilon).OrderBy(j => j.ArrivalTime).FirstOrDefault();
-                    if (nextJob != null) currentTime = nextJob.ArrivalTime;
+                    if (nextJob != null)
+                    {
+                        currentTime = nextJob.ArrivalTime;
+                    }
+                    else
+                    {
+                        // FAILSAFE: If no available jobs and no future jobs exist, break the loop to prevent freezing.
+                        break;
+                    }
                     prevJobId = -1;
                     continue;
                 }
