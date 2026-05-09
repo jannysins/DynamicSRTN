@@ -65,9 +65,9 @@
             // 
             btnSetJobs.Location = new Point(222, 43);
             btnSetJobs.Name = "btnSetJobs";
-            btnSetJobs.Size = new Size(55, 24);
+            btnSetJobs.Size = new Size(70, 24);
             btnSetJobs.TabIndex = 2;
-            btnSetJobs.Text = "button1";
+            btnSetJobs.Text = "Proceed";
             btnSetJobs.UseVisualStyleBackColor = true;
             // 
             // dgvInput
@@ -157,9 +157,9 @@
             lblTotalMemory.AutoSize = true;
             lblTotalMemory.Location = new Point(18, 44);
             lblTotalMemory.Name = "lblTotalMemory";
-            lblTotalMemory.Size = new Size(38, 15);
+            lblTotalMemory.Size = new Size(110, 15);
             lblTotalMemory.TabIndex = 13;
-            lblTotalMemory.Text = "label4";
+            lblTotalMemory.Text = "Enter Job Size (MB):";
             // 
             // Form1
             // 

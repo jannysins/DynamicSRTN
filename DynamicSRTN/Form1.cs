@@ -61,6 +61,9 @@ namespace DynamicSRTN
             rtbOutput.Visible = false;
             pnlGantt.Visible = false;
 
+            // NEW: Hide Exit button initially
+            btnExit.Visible = false;
+
             // Updated column count to include Memory
             dgvInput.ColumnCount = 4;
             dgvInput.Columns[0].Name = "Job ID";
@@ -72,16 +75,20 @@ namespace DynamicSRTN
 
         private void BtnSetJobs_Click(object sender, EventArgs e)
         {
+            // Assuming you also added validation for the Job Size textbox here
             if (int.TryParse(txtNumJobs.Text, out int numJobs) && numJobs > 0)
             {
                 dgvInput.Rows.Clear();
                 for (int i = 1; i <= numJobs; i++)
                 {
-                    dgvInput.Rows.Add($"P{i}", "0.0", "0.0", "100.0"); // Added default memory size
+                    dgvInput.Rows.Add($"P{i}", "0.0", "0.0", "100.0");
                 }
                 dgvInput.Visible = true;
                 btnContinue.Visible = true;
                 isCalculated = false;
+
+                // NEW: Show the exit button now that the setup is complete
+                btnExit.Visible = true;
             }
             else
             {
