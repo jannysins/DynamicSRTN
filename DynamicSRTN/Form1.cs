@@ -8,12 +8,12 @@ namespace DynamicSRTN
 {
     public partial class Form1 : Form
     {
-        // Data classes using 'double' to support real numbers (decimals)
         public class Job
         {
             public int Id { get; set; }
             public double ArrivalTime { get; set; }
             public double BurstTime { get; set; }
+            public double MemorySize { get; set; } // NEW: Memory requirement
             public double RemainingTime { get; set; }
             public double CompletionTime { get; set; }
             public double TurnAroundTime { get; set; }
@@ -27,8 +27,19 @@ namespace DynamicSRTN
             public double EndTime { get; set; }
         }
 
+        // NEW: Class to represent memory partitions
+        public class MemoryBlock
+        {
+            public string Name { get; set; }
+            public double Size { get; set; }
+            public bool IsAllocated { get; set; }
+            public Color BlockColor { get; set; }
+        }
+
         private List<Job> jobs;
         private List<GanttBlock> ganttChart;
+        private List<MemoryBlock> memoryMap; // NEW: Holds the memory snapshot
+        private double totalSystemMemory = 0;
         private bool isCalculated = false;
 
         public Form1()
@@ -50,11 +61,13 @@ namespace DynamicSRTN
             rtbOutput.Visible = false;
             pnlGantt.Visible = false;
 
-            dgvInput.ColumnCount = 3;
+            // Updated column count to include Memory
+            dgvInput.ColumnCount = 4;
             dgvInput.Columns[0].Name = "Job ID";
             dgvInput.Columns[0].ReadOnly = true;
             dgvInput.Columns[1].Name = "Arrival Time";
             dgvInput.Columns[2].Name = "Burst Time";
+            dgvInput.Columns[3].Name = "Memory Size (MB)";
         }
 
         private void BtnSetJobs_Click(object sender, EventArgs e)
@@ -64,8 +77,7 @@ namespace DynamicSRTN
                 dgvInput.Rows.Clear();
                 for (int i = 1; i <= numJobs; i++)
                 {
-                    // Defaulting to 0.0 to indicate to the user that decimals are accepted
-                    dgvInput.Rows.Add($"P{i}", "0.0", "0.0");
+                    dgvInput.Rows.Add($"P{i}", "0.0", "0.0", "100.0"); // Added default memory size
                 }
                 dgvInput.Visible = true;
                 btnContinue.Visible = true;
@@ -86,13 +98,22 @@ namespace DynamicSRTN
         {
             try
             {
+                // Ensure total memory is provided
+                if (!double.TryParse(txtTotalMemory.Text, out totalSystemMemory) || totalSystemMemory <= 0)
+                {
+                    MessageBox.Show("Please enter a valid Total Memory size.");
+                    return;
+                }
+
                 RunSRTN();
+                CalculateMemoryMap(); // NEW: Calculate memory layout
+
                 cbOptions.Visible = true;
                 MessageBox.Show("Data processed successfully. Please select an option from the dropdown to view results.");
             }
             catch (FormatException)
             {
-                MessageBox.Show("Input Error: Please ensure all Arrival Times and Burst Times are valid numbers (e.g., 1.5).");
+                MessageBox.Show("Input Error: Please ensure all table values are valid numbers.");
             }
             catch (Exception ex)
             {
@@ -100,23 +121,24 @@ namespace DynamicSRTN
             }
         }
 
+        // ... [RunSRTN method remains exactly the same as previous code] ...
         private void RunSRTN()
         {
             jobs = new List<Job>();
             ganttChart = new List<GanttBlock>();
 
-            // --- REAL NUMBER INPUT HANDLING ---
-            // Here we parse the grid values as 'double' instead of 'int'
             for (int i = 0; i < dgvInput.Rows.Count; i++)
             {
                 double arrival = double.Parse(dgvInput.Rows[i].Cells[1].Value.ToString());
                 double burst = double.Parse(dgvInput.Rows[i].Cells[2].Value.ToString());
+                double memory = double.Parse(dgvInput.Rows[i].Cells[3].Value.ToString()); // Parse Memory
 
                 jobs.Add(new Job
                 {
                     Id = i + 1,
                     ArrivalTime = arrival,
                     BurstTime = burst,
+                    MemorySize = memory,
                     RemainingTime = burst
                 });
             }
@@ -125,9 +147,8 @@ namespace DynamicSRTN
             int completedCount = 0;
             int prevJobId = -1;
             int n = jobs.Count;
-            double epsilon = 0.00001; // Precision buffer for comparing decimals
+            double epsilon = 0.00001;
 
-            // Event-driven SRTN Algorithm for handling decimal interruptions
             while (completedCount < n)
             {
                 var availableJobs = jobs.Where(j => j.ArrivalTime <= currentTime + epsilon && j.RemainingTime > epsilon).ToList();
@@ -135,16 +156,12 @@ namespace DynamicSRTN
                 if (availableJobs.Count == 0)
                 {
                     var nextJob = jobs.Where(j => j.RemainingTime > epsilon).OrderBy(j => j.ArrivalTime).FirstOrDefault();
-                    if (nextJob != null)
-                    {
-                        currentTime = nextJob.ArrivalTime;
-                    }
+                    if (nextJob != null) currentTime = nextJob.ArrivalTime;
                     prevJobId = -1;
                     continue;
                 }
 
                 var currentJob = availableJobs.OrderBy(j => j.RemainingTime).ThenBy(j => j.ArrivalTime).First();
-
                 var futureJobs = jobs.Where(j => j.ArrivalTime > currentTime + epsilon && j.RemainingTime > epsilon).ToList();
                 double timeToNextArrival = futureJobs.Count > 0 ? futureJobs.Min(j => j.ArrivalTime) - currentTime : double.MaxValue;
 
@@ -172,8 +189,46 @@ namespace DynamicSRTN
                     completedCount++;
                 }
             }
-
             isCalculated = true;
+        }
+
+        // NEW: Calculates First-Fit Dynamic Partitioning for a snapshot view
+        private void CalculateMemoryMap()
+        {
+            memoryMap = new List<MemoryBlock>();
+
+            // Assume 10% of total memory is reserved for the OS at the bottom
+            double osSize = totalSystemMemory * 0.10;
+            double availableMemory = totalSystemMemory - osSize;
+
+            memoryMap.Add(new MemoryBlock { Name = "OS", Size = osSize, IsAllocated = true, BlockColor = Color.LightPink });
+
+            // Initialize the rest as one giant free partition
+            memoryMap.Add(new MemoryBlock { Name = "Free Partition", Size = availableMemory, IsAllocated = false, BlockColor = Color.LightYellow });
+
+            // Allocate jobs using First-Fit (Placing them above the OS)
+            foreach (var job in jobs)
+            {
+                for (int i = 0; i < memoryMap.Count; i++)
+                {
+                    if (!memoryMap[i].IsAllocated && memoryMap[i].Size >= job.MemorySize)
+                    {
+                        // Split the block
+                        double leftover = memoryMap[i].Size - job.MemorySize;
+
+                        memoryMap[i].Name = $"P{job.Id}";
+                        memoryMap[i].Size = job.MemorySize;
+                        memoryMap[i].IsAllocated = true;
+                        memoryMap[i].BlockColor = Color.SlateBlue;
+
+                        if (leftover > 0)
+                        {
+                            memoryMap.Insert(i + 1, new MemoryBlock { Name = "Free Partition", Size = leftover, IsAllocated = false, BlockColor = Color.LightYellow });
+                        }
+                        break; // Move to the next job once allocated
+                    }
+                }
+            }
         }
 
         private void CbOptions_SelectedIndexChanged(object sender, EventArgs e)
@@ -183,68 +238,53 @@ namespace DynamicSRTN
             rtbOutput.Clear();
             rtbOutput.Visible = false;
             pnlGantt.Visible = false;
+            pnlGantt.Paint -= DrawGanttChart;
+            pnlGantt.Paint -= DrawMemoryMap; // Ensure previous paints are cleared
 
             int selection = cbOptions.SelectedIndex + 1;
 
-            switch (selection)
+            if (selection == 1) // GANTT Chart
             {
-                case 1: // GANTT Chart
-                    pnlGantt.Visible = true;
+                pnlGantt.Visible = true;
+                float scale = 30f;
+                float totalWidth = 20f;
+                if (ganttChart.Count > 0) totalWidth += (float)ganttChart.Last().EndTime * scale + 50f;
 
-                    float scale = 30f;
-                    float totalWidth = 20f;
-                    if (ganttChart.Count > 0)
-                    {
-                        totalWidth += (float)ganttChart.Last().EndTime * scale + 50f;
-                    }
-
-                    // Enable scrolling based on the calculated width of the chart
-                    pnlGantt.AutoScroll = true;
-                    pnlGantt.AutoScrollMinSize = new Size((int)totalWidth, pnlGantt.Height);
-
-                    pnlGantt.Paint -= DrawGanttChart;
-                    pnlGantt.Paint += DrawGanttChart;
-
-                    pnlGantt.Invalidate();
-                    break;
-
-                case 2: // Process Waiting Time
-                    rtbOutput.Visible = true;
-                    foreach (var j in jobs) rtbOutput.AppendText($"Process P{j.Id} Waiting Time: {j.WaitingTime:F2}\n");
-                    break;
-                case 3: // Average Waiting Time
-                    rtbOutput.Visible = true;
-                    double avgWait = jobs.Average(j => j.WaitingTime);
-                    rtbOutput.Text = $"Average Waiting Time: {avgWait:F2}";
-                    break;
-                case 4: // Process Completion Time
-                    rtbOutput.Visible = true;
-                    foreach (var j in jobs) rtbOutput.AppendText($"Process P{j.Id} Completion Time: {j.CompletionTime:F2}\n");
-                    break;
-                case 5: // Average Completion Time
-                    rtbOutput.Visible = true;
-                    double avgComp = jobs.Average(j => j.CompletionTime);
-                    rtbOutput.Text = $"Average Completion Time: {avgComp:F2}";
-                    break;
-                case 6: // Process Turn Around Time
-                    rtbOutput.Visible = true;
-                    foreach (var j in jobs) rtbOutput.AppendText($"Process P{j.Id} Turn Around Time: {j.TurnAroundTime:F2}\n");
-                    break;
-                case 7: // Average Turn Around Time
-                    rtbOutput.Visible = true;
-                    double avgTat = jobs.Average(j => j.TurnAroundTime);
-                    rtbOutput.Text = $"Average Turn Around Time: {avgTat:F2}";
-                    break;
+                pnlGantt.AutoScroll = true;
+                pnlGantt.AutoScrollMinSize = new Size((int)totalWidth, pnlGantt.Height);
+                pnlGantt.Paint += DrawGanttChart;
+                pnlGantt.Invalidate();
+            }
+            else if (selection == 8) // NEW: Memory Map
+            {
+                pnlGantt.Visible = true;
+                pnlGantt.AutoScroll = true;
+                pnlGantt.AutoScrollMinSize = new Size(pnlGantt.Width, (int)totalSystemMemory + 100);
+                pnlGantt.Paint += DrawMemoryMap;
+                pnlGantt.Invalidate();
+            }
+            // ... [Cases 2 through 7 remain exactly the same, mapping to rtbOutput] ...
+            else
+            {
+                rtbOutput.Visible = true;
+                switch (selection)
+                {
+                    case 2: foreach (var j in jobs) rtbOutput.AppendText($"P{j.Id} Waiting Time: {j.WaitingTime:F2}\n"); break;
+                    case 3: rtbOutput.Text = $"Average Waiting Time: {jobs.Average(j => j.WaitingTime):F2}"; break;
+                    case 4: foreach (var j in jobs) rtbOutput.AppendText($"P{j.Id} Completion Time: {j.CompletionTime:F2}\n"); break;
+                    case 5: rtbOutput.Text = $"Average Completion Time: {jobs.Average(j => j.CompletionTime):F2}"; break;
+                    case 6: foreach (var j in jobs) rtbOutput.AppendText($"P{j.Id} Turn Around Time: {j.TurnAroundTime:F2}\n"); break;
+                    case 7: rtbOutput.Text = $"Average Turn Around Time: {jobs.Average(j => j.TurnAroundTime):F2}"; break;
+                }
             }
         }
 
+        // ... [DrawGanttChart remains exactly the same] ...
         private void DrawGanttChart(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
             g.Clear(Color.White);
-
-            // Translates the drawing canvas based on scrollbar position
-            g.TranslateTransform(pnlGantt.AutoScrollPosition.X, pnlGantt.AutoScrollPosition.Y);
+            g.TranslateTransform(pnlGantt.AutoScrollPosition.X, 0);
 
             float x = 10f;
             float y = 20f;
@@ -255,34 +295,50 @@ namespace DynamicSRTN
             {
                 float width = (float)(block.EndTime - block.StartTime) * scale;
                 if (width <= 0) continue;
-
                 g.DrawRectangle(Pens.Black, x, y, width, blockHeight);
                 g.DrawString($"P{block.JobId}", this.Font, Brushes.Black, x + 5, y + 10);
-
-                // Trimming the decimals to two places for cleaner visuals on the chart
                 g.DrawString(block.StartTime.ToString("0.##"), this.Font, Brushes.Black, x, y + blockHeight + 5);
-
                 x += width;
             }
-            if (ganttChart.Count > 0)
+            if (ganttChart.Count > 0) g.DrawString(ganttChart.Last().EndTime.ToString("0.##"), this.Font, Brushes.Black, x, y + blockHeight + 5);
+        }
+
+        // NEW: Draws the stacked memory map
+        private void DrawMemoryMap(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            g.Clear(Color.White);
+            g.TranslateTransform(0, pnlGantt.AutoScrollPosition.Y); // Vertical Scroll
+
+            float blockWidth = 150f;
+            float x = 50f;
+
+            // Start from the bottom of the canvas and draw upwards to match your image
+            float currentY = Math.Max(pnlGantt.Height, (float)totalSystemMemory + 50f);
+
+            // Reverse the map so OS is drawn at the very bottom
+            var reversedMap = Enumerable.Reverse(memoryMap).ToList();
+
+            foreach (var block in reversedMap)
             {
-                g.DrawString(ganttChart.Last().EndTime.ToString("0.##"), this.Font, Brushes.Black, x, y + blockHeight + 5);
+                // Scale the visual height so it fits nicely on screen
+                float blockHeight = Math.Max((float)block.Size, 30f);
+                currentY -= blockHeight;
+
+                // Draw colored rectangle
+                using (Brush brush = new SolidBrush(block.BlockColor))
+                {
+                    g.FillRectangle(brush, x, currentY, blockWidth, blockHeight);
+                }
+                g.DrawRectangle(Pens.Black, x, currentY, blockWidth, blockHeight);
+
+                // Draw Name inside block
+                StringFormat sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+                g.DrawString(block.Name, this.Font, Brushes.Black, new RectangleF(x, currentY, blockWidth, blockHeight), sf);
+
+                // Draw Memory Size (e.g., 100K) to the right of the block
+                g.DrawString($"{block.Size}K", this.Font, Brushes.Black, x + blockWidth + 10, currentY + (blockHeight / 2) - 8);
             }
-        }
-
-        private void btnSetJobs_Click_1(object sender, EventArgs e)
-        {
-
-        }
-
-        private void pnlGantt_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void cbOptions_SelectedIndexChanged_1(object sender, EventArgs e)
-        {
-
         }
     }
 }

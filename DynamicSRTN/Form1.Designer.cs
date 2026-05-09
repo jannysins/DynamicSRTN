@@ -37,12 +37,17 @@
             cbOptions = new ComboBox();
             rtbOutput = new RichTextBox();
             pnlGantt = new Panel();
+            label1 = new Label();
+            label2 = new Label();
+            label3 = new Label();
+            txtTotalMemory = new TextBox();
+            lblTotalMemory = new Label();
             ((System.ComponentModel.ISupportInitialize)dgvInput).BeginInit();
             SuspendLayout();
             // 
             // txtNumJobs
             // 
-            txtNumJobs.Location = new Point(149, 42);
+            txtNumJobs.Location = new Point(148, 15);
             txtNumJobs.Name = "txtNumJobs";
             txtNumJobs.Size = new Size(68, 23);
             txtNumJobs.TabIndex = 0;
@@ -50,7 +55,7 @@
             // lblNumJobs
             // 
             lblNumJobs.AutoSize = true;
-            lblNumJobs.Location = new Point(19, 44);
+            lblNumJobs.Location = new Point(18, 17);
             lblNumJobs.Name = "lblNumJobs";
             lblNumJobs.Size = new Size(124, 15);
             lblNumJobs.TabIndex = 1;
@@ -58,13 +63,12 @@
             // 
             // btnSetJobs
             // 
-            btnSetJobs.Location = new Point(223, 41);
+            btnSetJobs.Location = new Point(222, 43);
             btnSetJobs.Name = "btnSetJobs";
             btnSetJobs.Size = new Size(55, 24);
             btnSetJobs.TabIndex = 2;
             btnSetJobs.Text = "button1";
             btnSetJobs.UseVisualStyleBackColor = true;
-            btnSetJobs.Click += btnSetJobs_Click_1;
             // 
             // dgvInput
             // 
@@ -96,12 +100,11 @@
             // cbOptions
             // 
             cbOptions.FormattingEnabled = true;
-            cbOptions.Items.AddRange(new object[] { "GANTT Chart illustrating the execution of each process/job", "Process Waiting time", "average waiting time", "Process completion time", "average completion time", "process turn around time", "average turn around time" });
+            cbOptions.Items.AddRange(new object[] { "GANTT Chart illustrating the execution of each process/job", "Process Waiting time", "average waiting time", "Process completion time", "average completion time", "process turn around time", "average turn around time", "Dynamic Partitioning Memory Map" });
             cbOptions.Location = new Point(19, 254);
             cbOptions.Name = "cbOptions";
             cbOptions.Size = new Size(363, 23);
             cbOptions.TabIndex = 6;
-            cbOptions.SelectedIndexChanged += cbOptions_SelectedIndexChanged_1;
             // 
             // rtbOutput
             // 
@@ -115,15 +118,59 @@
             // 
             pnlGantt.Location = new Point(392, 25);
             pnlGantt.Name = "pnlGantt";
-            pnlGantt.Size = new Size(936, 106);
+            pnlGantt.Size = new Size(936, 346);
             pnlGantt.TabIndex = 8;
-            pnlGantt.Paint += pnlGantt_Paint;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(398, 176);
+            label1.Name = "label1";
+            label1.Size = new Size(0, 15);
+            label1.TabIndex = 9;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(419, 183);
+            label2.Name = "label2";
+            label2.Size = new Size(0, 15);
+            label2.TabIndex = 10;
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(19, 52);
+            label3.Name = "label3";
+            label3.Size = new Size(0, 15);
+            label3.TabIndex = 11;
+            // 
+            // txtTotalMemory
+            // 
+            txtTotalMemory.Location = new Point(148, 44);
+            txtTotalMemory.Name = "txtTotalMemory";
+            txtTotalMemory.Size = new Size(68, 23);
+            txtTotalMemory.TabIndex = 12;
+            // 
+            // lblTotalMemory
+            // 
+            lblTotalMemory.AutoSize = true;
+            lblTotalMemory.Location = new Point(18, 44);
+            lblTotalMemory.Name = "lblTotalMemory";
+            lblTotalMemory.Size = new Size(38, 15);
+            lblTotalMemory.TabIndex = 13;
+            lblTotalMemory.Text = "label4";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1343, 450);
+            Controls.Add(lblTotalMemory);
+            Controls.Add(txtTotalMemory);
+            Controls.Add(label3);
+            Controls.Add(label2);
+            Controls.Add(label1);
             Controls.Add(pnlGantt);
             Controls.Add(rtbOutput);
             Controls.Add(cbOptions);
@@ -151,5 +198,10 @@
         private ComboBox cbOptions;
         private RichTextBox rtbOutput;
         private Panel pnlGantt;
+        private Label label1;
+        private Label label2;
+        private Label label3;
+        private TextBox txtTotalMemory;
+        private Label lblTotalMemory;
     }
 }
