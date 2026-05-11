@@ -18,6 +18,8 @@ namespace DynamicSRTN
             public double CompletionTime { get; set; }
             public double TurnAroundTime { get; set; }
             public double WaitingTime { get; set; }
+
+            public Color JobColor { get; set; }
         }
 
         public class GanttBlock
@@ -52,7 +54,7 @@ namespace DynamicSRTN
 
             btnSetJobs.Click += BtnSetJobs_Click;
             btnContinue.Click += BtnContinue_Click;
-            btnExit.Click += BtnExit_Click;
+            btnclose.Click += BtnExit_Click;
             cbOptions.SelectedIndexChanged += CbOptions_SelectedIndexChanged;
         }
 
@@ -65,7 +67,7 @@ namespace DynamicSRTN
             pnlGantt.Visible = false;
 
             // NEW: Hide Exit button initially
-            btnExit.Visible = false;
+            btnclose.Visible = false;
 
             // Updated column count to include Memory
             dgvInput.ColumnCount = 4;
@@ -89,7 +91,7 @@ namespace DynamicSRTN
                 dgvInput.Visible = true;
                 btnContinue.Visible = true;
                 isCalculated = false;
-                btnExit.Visible = true;
+                btnclose.Visible = true;
             }
             else
             {
@@ -144,6 +146,8 @@ namespace DynamicSRTN
                     }
                 }
 
+
+
                 RunSRTN();
                 CalculateMemoryMap();
 
@@ -162,11 +166,16 @@ namespace DynamicSRTN
             jobs = new List<Job>();
             ganttChart = new List<GanttBlock>();
 
+            Random rnd = new Random(); // Initialize random number generator
+
             for (int i = 0; i < dgvInput.Rows.Count; i++)
             {
                 double arrival = double.Parse(dgvInput.Rows[i].Cells[1].Value.ToString());
                 double burst = double.Parse(dgvInput.Rows[i].Cells[2].Value.ToString());
-                double memory = double.Parse(dgvInput.Rows[i].Cells[3].Value.ToString()); // Parse Memory
+                double memory = double.Parse(dgvInput.Rows[i].Cells[3].Value.ToString());
+
+                // Generate a random pastel/light color for readability
+                Color randomColor = Color.FromArgb(rnd.Next(120, 256), rnd.Next(120, 256), rnd.Next(120, 256));
 
                 jobs.Add(new Job
                 {
@@ -174,7 +183,8 @@ namespace DynamicSRTN
                     ArrivalTime = arrival,
                     BurstTime = burst,
                     MemorySize = memory,
-                    RemainingTime = burst
+                    RemainingTime = burst,
+                    JobColor = randomColor // Assign the generated color
                 });
             }
 
@@ -262,7 +272,7 @@ namespace DynamicSRTN
                         memoryMap[i].Name = $"P{job.Id}";
                         memoryMap[i].Size = job.MemorySize;
                         memoryMap[i].IsAllocated = true;
-                        memoryMap[i].BlockColor = Color.SlateBlue;
+                        memoryMap[i].BlockColor = job.JobColor;
 
                         if (leftover > 0)
                         {
@@ -349,6 +359,20 @@ namespace DynamicSRTN
             {
                 float width = (float)(block.EndTime - block.StartTime) * scale;
                 if (width <= 0) continue;
+
+                // Find the job associated with this block to get its color
+                var job = jobs.FirstOrDefault(j => j.Id == block.JobId);
+
+                if (job != null)
+                {
+                    // Fill the background with the random color
+                    using (Brush brush = new SolidBrush(job.JobColor))
+                    {
+                        g.FillRectangle(brush, x, y, width, blockHeight);
+                    }
+                }
+
+                // Draw the border and text over the colored background
                 g.DrawRectangle(Pens.Black, x, y, width, blockHeight);
                 g.DrawString($"P{block.JobId}", this.Font, Brushes.Black, x + 5, y + 10);
                 g.DrawString(block.StartTime.ToString("0.##"), this.Font, Brushes.Black, x, y + blockHeight + 5);
@@ -395,6 +419,15 @@ namespace DynamicSRTN
         private void label4_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void btnExit_Click_1(object sender, EventArgs e)
+        {
+            DialogResult res = MessageBox.Show("Are you sure you want to exit?", "CONFIRMATION", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+             if (res == DialogResult.Yes)
+             {
+                Close(); 
+            }
         }
     }
 }

@@ -33,7 +33,7 @@
             btnSetJobs = new Button();
             dgvInput = new DataGridView();
             btnContinue = new Button();
-            btnExit = new Button();
+            btnclose = new Button();
             cbOptions = new ComboBox();
             rtbOutput = new RichTextBox();
             pnlGantt = new Panel();
@@ -48,7 +48,7 @@
             // 
             // txtNumJobs
             // 
-            txtNumJobs.Location = new Point(141, 90);
+            txtNumJobs.Location = new Point(193, 91);
             txtNumJobs.Name = "txtNumJobs";
             txtNumJobs.Size = new Size(68, 23);
             txtNumJobs.TabIndex = 0;
@@ -56,60 +56,66 @@
             // lblNumJobs
             // 
             lblNumJobs.AutoSize = true;
+            lblNumJobs.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblNumJobs.Location = new Point(11, 92);
             lblNumJobs.Name = "lblNumJobs";
-            lblNumJobs.Size = new Size(124, 15);
+            lblNumJobs.Size = new Size(179, 21);
             lblNumJobs.TabIndex = 1;
             lblNumJobs.Text = "Enter Number of Jobs:";
             // 
             // btnSetJobs
             // 
-            btnSetJobs.Location = new Point(215, 118);
+            btnSetJobs.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnSetJobs.Location = new Point(267, 102);
             btnSetJobs.Name = "btnSetJobs";
-            btnSetJobs.Size = new Size(70, 24);
+            btnSetJobs.Size = new Size(78, 24);
             btnSetJobs.TabIndex = 2;
-            btnSetJobs.Text = "Proceed";
+            btnSetJobs.Text = "PROCEED";
             btnSetJobs.UseVisualStyleBackColor = true;
             // 
             // dgvInput
             // 
             dgvInput.AllowUserToAddRows = false;
             dgvInput.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvInput.Location = new Point(12, 145);
+            dgvInput.Location = new Point(11, 162);
             dgvInput.Name = "dgvInput";
             dgvInput.Size = new Size(424, 201);
             dgvInput.TabIndex = 3;
             // 
             // btnContinue
             // 
-            btnContinue.Location = new Point(141, 352);
+            btnContinue.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnContinue.Location = new Point(108, 369);
             btnContinue.Name = "btnContinue";
-            btnContinue.Size = new Size(79, 24);
+            btnContinue.Size = new Size(100, 24);
             btnContinue.TabIndex = 4;
-            btnContinue.Text = "Continue";
+            btnContinue.Text = "CONTINUE";
             btnContinue.UseVisualStyleBackColor = true;
             // 
-            // btnExit
+            // btnclose
             // 
-            btnExit.Location = new Point(226, 352);
-            btnExit.Name = "btnExit";
-            btnExit.Size = new Size(80, 24);
-            btnExit.TabIndex = 5;
-            btnExit.Text = "Exit";
-            btnExit.UseVisualStyleBackColor = true;
+            btnclose.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnclose.Location = new Point(225, 369);
+            btnclose.Name = "btnclose";
+            btnclose.Size = new Size(80, 24);
+            btnclose.TabIndex = 5;
+            btnclose.Text = "CLOSE";
+            btnclose.UseVisualStyleBackColor = true;
+            btnclose.Click += btnExit_Click_1;
             // 
             // cbOptions
             // 
             cbOptions.FormattingEnabled = true;
             cbOptions.Items.AddRange(new object[] { "GANTT Chart illustrating the execution of each process/job", "Process Waiting time", "Average waiting time", "Process completion time", "Average completion time", "Process turn around time", "Average turn around time", "Dynamic Partitioning Memory Map" });
-            cbOptions.Location = new Point(12, 382);
+            cbOptions.Location = new Point(11, 399);
             cbOptions.Name = "cbOptions";
             cbOptions.Size = new Size(424, 23);
             cbOptions.TabIndex = 6;
             // 
             // rtbOutput
             // 
-            rtbOutput.Location = new Point(12, 411);
+            rtbOutput.BackColor = Color.Gray;
+            rtbOutput.Location = new Point(11, 428);
             rtbOutput.Name = "rtbOutput";
             rtbOutput.Size = new Size(424, 129);
             rtbOutput.TabIndex = 7;
@@ -148,7 +154,7 @@
             // 
             // txtTotalMemory
             // 
-            txtTotalMemory.Location = new Point(141, 119);
+            txtTotalMemory.Location = new Point(193, 120);
             txtTotalMemory.Name = "txtTotalMemory";
             txtTotalMemory.Size = new Size(68, 23);
             txtTotalMemory.TabIndex = 12;
@@ -156,9 +162,10 @@
             // lblTotalMemory
             // 
             lblTotalMemory.AutoSize = true;
-            lblTotalMemory.Location = new Point(11, 119);
+            lblTotalMemory.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblTotalMemory.Location = new Point(12, 118);
             lblTotalMemory.Name = "lblTotalMemory";
-            lblTotalMemory.Size = new Size(110, 15);
+            lblTotalMemory.Size = new Size(161, 21);
             lblTotalMemory.TabIndex = 13;
             lblTotalMemory.Text = "Enter Job Size (MB):";
             // 
@@ -177,6 +184,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.Gray;
             ClientSize = new Size(1322, 643);
             Controls.Add(label4);
             Controls.Add(lblTotalMemory);
@@ -187,7 +195,7 @@
             Controls.Add(pnlGantt);
             Controls.Add(rtbOutput);
             Controls.Add(cbOptions);
-            Controls.Add(btnExit);
+            Controls.Add(btnclose);
             Controls.Add(btnContinue);
             Controls.Add(dgvInput);
             Controls.Add(btnSetJobs);
@@ -207,7 +215,7 @@
         private Button btnSetJobs;
         private DataGridView dgvInput;
         private Button btnContinue;
-        private Button btnExit;
+        private Button btnclose;
         private ComboBox cbOptions;
         private RichTextBox rtbOutput;
         private Panel pnlGantt;
